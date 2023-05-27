@@ -5,13 +5,12 @@ import pickle
 import random
 import numpy as np
 
-def discount_cumsum(x, gamma):
-    disc_cumsum = np.zeros_like(x)
-    disc_cumsum[-1] = x[-1]
-    for t in reversed(range(x.shape[0]-1)):
-        disc_cumsum[t] = x[t] + gamma * disc_cumsum[t+1]
-    return disc_cumsum
-    
+
+################################################################################################################
+# Dataset
+#
+#
+################################################################################################################
 class MimicTrajectoryDataset(Dataset):
     def __init__(self, dataset_path, context_len, rtg_scale, norm=False):
 
@@ -115,3 +114,16 @@ class MimicTrajectoryDataset(Dataset):
 
 
         return  states, actions, returns_to_go, timesteps, saps, div_saps, traj_len
+
+
+################################################################################################################
+# Discounting
+#
+#
+################################################################################################################
+def discount_cumsum(x, gamma):
+    disc_cumsum = np.zeros_like(x)
+    disc_cumsum[-1] = x[-1]
+    for t in reversed(range(x.shape[0]-1)):
+        disc_cumsum[t] = x[t] + gamma * disc_cumsum[t+1]
+    return disc_cumsum

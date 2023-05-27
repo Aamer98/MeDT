@@ -5,23 +5,20 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 
-# Set seed
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-
-
-# Autoregressive estimation of states
+################################################################################################################
+# Autoregressive sampling of states
+#
+# Take a conditioning sequence of indices in x (of shape (b,t)) and predict the next token in
+# the sequence, feeding the predictions back into the model each time.
+#
+# Inputs:
+#   x: sequence of states
+#   actions: sequence of actions
+#   model: state predictor
+#   
+################################################################################################################
 @torch.no_grad()
-def predict_state(model, x, steps, actions=None, timesteps=None):
-    """
-    take a conditioning sequence of indices in x (of shape (b,t)) and predict the next token in
-    the sequence, feeding the predictions back into the model each time. Clearly the sampling
-    has quadratic complexity unlike an RNN that is only linear, and has a finite context window
-    of block_size, unlike an RNN that has an infinite context window.
-    """
+def state_sample(model, x, steps, actions=None, timesteps=None):
     block_size = 50
     model.eval()
     for k in range(steps):
@@ -34,14 +31,26 @@ def predict_state(model, x, steps, actions=None, timesteps=None):
     return out
 
 
-# Autoregressive 
+
+################################################################################################################
+# Autoregressive sampling of actions
+#
+# Take a conditioning sequence of indices in x (of shape (b,t)) and predict the next token in
+# the sequence, feeding the predictions back into the model each time.
+#
+# Inputs:
+#   x: sequence of states
+#   actions: sequence of actions
+#   model: policy model
+#   rtg: returns-to-go conditioning
+#   atg: acuity-to-go conditioning
+#   
+################################################################################################################
 @torch.no_grad()
-def sample(model, x, steps, temperature=1.0, sample=False, top_k=None, actions=None, rtgs=None, timesteps=None, ucrtg=None, traj_len=None):
+def action_sample(model, x, steps, temperature=1.0, sample=False, top_k=None, actions=None, rtgs=None, timesteps=None, atgs=None, traj_len=None):
     """
     take a conditioning sequence of indices in x (of shape (b,t)) and predict the next token in
-    the sequence, feeding the predictions back into the model each time. Clearly the sampling
-    has quadratic complexity unlike an RNN that is only linear, and has a finite context window
-    of block_size, unlike an RNN that has an infinite context window.
+    the sequence, feeding the predictions back into the model each time. 
     """
     block_size = 200
     model.eval()
@@ -51,10 +60,10 @@ def sample(model, x, steps, temperature=1.0, sample=False, top_k=None, actions=N
         if actions is not None:
             actions = actions if actions.size(1) <= block_size//10 else actions[:, -block_size//10:] # crop context if needed
 
-        ucrtg = ucrtg if ucrtg.size(1) <= block_size//10 else ucrtg[:, -block_size//10:] # crop context if needed            
+        atgs = atgs if atgs.size(1) <= block_size//10 else atgs[:, -block_size//10:] # crop context if needed            
         rtgs = rtgs if rtgs.size(1) <= block_size//10 else rtgs[:, -block_size//10:] # crop context if needed
 
-        logits, _, _ = model(x_cond, actions=actions, targets=None, rtgs=rtgs, timesteps=timesteps, divSaps=ucrtg, traj_len=traj_len)
+        logits, _, _ = model(x_cond, actions=actions, targets=None, rtgs=rtgs, timesteps=timesteps, divSaps=atgs, traj_len=traj_len)
         # pluck the logits at the final step and scale by temperature
         logits = logits[:, -1, :] / temperature
         # optionally crop probabilities to only the top k options
@@ -72,8 +81,20 @@ def sample(model, x, steps, temperature=1.0, sample=False, top_k=None, actions=N
     return x
 
 
-# SAPS2 Calculator
-def calc_saps2(state):   
+################################################################################################################
+# SAPS2 calculator function
+#
+# Take a state of dim 45 and calculate the SAPS2 acuity score
+#
+# Inputs:
+#   x: sequence of states
+#   actions: sequence of actions
+#   model: policy model
+#   rtg: returns-to-go conditioning
+#   atg: acuity-to-go conditioning
+#   
+################################################################################################################
+def calculate_saps2(state):   
     
     # Map names to patient state
     col_names = ['o:GCS', 'o:HR', 'o:SysBP',
@@ -88,7 +109,7 @@ def calc_saps2(state):
           'o:mechvent', 'o:re_admission', 'o:age', 'o:Weight_kg']
     state = dict(zip(col_names, state))
     
-    # Ranges of values
+    # Covariate intervals for score calculation
     age_values = np.array([0, 7, 12, 15, 16, 18])
     hr_values = np.array([11, 2, 0, 4, 7])
     bp_values = np.array([13, 5, 0, 2])
@@ -103,7 +124,7 @@ def calc_saps2(state):
     bili_values = np.array([0, 4, 9])
     gcs_values = np.array([26, 13, 7, 5, 0])
 
-    # Calculate SAPS score
+    # Calculate score for each covariate
     age = np.array([ state['o:age']<40, (state['o:age']>=40)&(state['o:age']<60), (state['o:age']>=60)&(state['o:age']<70), (state['o:age']>=70)&(state['o:age']<75), (state['o:age']>=75)&(state['o:age']<80), state['o:age']>=80 ])
     hr = np.array([ state['o:HR']<40, (state['o:HR']>=40)&(state['o:HR']<70), (state['o:HR']>=70)&(state['o:HR']<120), (state['o:HR']>=120)&(state['o:HR']<160), state['o:HR']>=160 ])
     bp = np.array([ state['o:SysBP']<70, (state['o:SysBP']>=70)&(state['o:SysBP']<100), (state['o:SysBP']>=100)&(state['o:SysBP']<200), state['o:SysBP']>=200 ])
@@ -117,6 +138,8 @@ def calc_saps2(state):
     hco3 = np.array([ state['o:HCO3']<15, (state['o:HCO3']>=15)&(state['o:HCO3']<20), state['o:HCO3']>=20 ])
     bili = np.array([ state['o:Total_bili']<4, (state['o:Total_bili']>=4)&(state['o:Total_bili']<6), state['o:Total_bili']>=6 ])
     gcs = np.array([ state['o:GCS']<6, (state['o:GCS']>=6)&(state['o:GCS']<9), (state['o:GCS']>=9)&(state['o:GCS']<11), (state['o:GCS']>=11)&(state['o:GCS']<14), state['o:GCS']>=14 ])
+    
+    # Calculate SAPS score
     sapsii = max(age_values[age], default=0) + max(hr_values[hr], default=0) + max(bp_values[bp], default=0) + max(temp_values[temp], default=0) + max(o2_values[o2]*state['o:mechvent'], default=0) + max(output_values[out], default=0) + max(bun_values[bun], default=0) + max(wbc_values[wbc], default=0) + max(k_values[k], default=0) + max(na_values[na], default=0) + max(hco3_values[hco3], default=0) + max(bili_values[bili], default=0) + max(gcs_values[gcs], default=0)
 
     # Calculate SAPS constituents
@@ -131,12 +154,34 @@ def calc_saps2(state):
     return sapsii, Cardivascular, Respiratory, Neurological, Renal, Hepatic, Haematologic, Other
 
 
+################################################################################################################
 # Calculates SAPS scores over patient state trajectories 
+#
+# Take a trajectories of dim (n,t,45)
+#
+# where:
+#   n: number of trajectories
+#   t: length of each trajectory
+#   
+################################################################################################################
 def calculate_scores(states):
     saps2_scores = []
+    
+    # Iterate over number of trajectories
     for i in range(len(states)):
         saps2_traj = []
+        
+        # Iterate over each state in trajectory
         for j in range(len(states[i])):
-            saps2_traj.append(calc_saps2(states[i][j]))
+            saps2_traj.append(calculate_saps2(states[i][j]))
         saps2_scores.append(saps2_traj)     
+    
     return saps2_scores
+
+
+# Set seed
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)

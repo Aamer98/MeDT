@@ -13,10 +13,15 @@ Simple training loop; Boilerplate that could apply to any arbitrary neural netwo
 so nothing in this file really has anything to do with GPT specifically.
 """
 
+from collections import deque
+import random
+import cv2
+import torch
+from PIL import Image
+import matplotlib.pyplot as plt
+
 import math
 import logging
-import wandb
-from torch.utils.tensorboard import SummaryWriter
 import os
 
 from tqdm import tqdm
@@ -27,15 +32,6 @@ import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data.dataloader import DataLoader
-
-logger = logging.getLogger(__name__)
-
-from collections import deque
-import random
-import cv2
-import torch
-from PIL import Image
-import matplotlib.pyplot as plt
 
 class TrainerConfig:
     # optimization parameters
@@ -74,16 +70,8 @@ class Trainer:
             self.device = torch.cuda.current_device()
             self.model = torch.nn.DataParallel(self.model).to(self.device)
 
-    # def save_checkpoint(self):
-    #     # DataParallel wrappers keep raw model object in .module attribute
-    #     raw_model = self.model.module if hasattr(self.model, "module") else self.model
-    #     logger.info("saving %s", self.config.ckpt_path)
-    #     # torch.save(raw_model.state_dict(), self.config.ckpt_path)
-
     def run_epoch(self, split, best_val_loss, epoch_num=0):
-            
-        is_train = split == 'train'
-        self.model.train(is_train)
+
 
         data = self.train_dataset if is_train else self.test_dataset
         loader = DataLoader(data, shuffle=True, pin_memory=True,
@@ -100,9 +88,8 @@ class Trainer:
         pbar = tqdm(enumerate(loader), total=len(loader)) if is_train else enumerate(loader)
         eval_pbar = tqdm(enumerate(eval_loader), total=len(eval_loader))
         
+        self.model.train()
         for it, (x, y, r, t, saps, divSaps, traj_len) in pbar:        
-
-            self.model.train()
             # states, actions, rtgs, timesteps
             # place data on the correct device
             x = x.to(self.device)
@@ -158,12 +145,14 @@ class Trainer:
                     lr = self.config.learning_rate
 
 
-        self.model.eval()
+        
         mean_train_accuracy = correct/total_samples
+        mean_train_loss = sum(losses)/len(losses)
 
         correct = 0	
         total_samples = 0        
 
+        self.model.eval()
         for it, (x, y, r, t, saps, divSaps, traj_len) in eval_pbar:
             # states, actions, rtgs, timesteps
             # place data on the correct device
@@ -185,9 +174,9 @@ class Trainer:
             total_samples += float(out.shape[0]*out.shape[1])            
 
 		
-        mean_val_accuracy = correct/total_samples	
-        mean_train_loss = sum(losses)/len(losses)	
+        mean_val_accuracy = correct/total_samples		
         mean_val_loss = sum(val_losses)/len(val_losses)	
+        
         self.df.loc[epoch_num] = [epoch_num, mean_train_loss, mean_val_loss, mean_train_accuracy, mean_val_accuracy]	
         self.e_losses.append(mean_train_loss)	
         self.e_accuracies.append(mean_train_accuracy)	
@@ -195,51 +184,24 @@ class Trainer:
         self.e_val_accuracies.append(mean_val_accuracy) 
 
 
-        # mean_train_loss = sum(losses)/len(losses)
-        # mean_val_loss = sum(val_losses)/len(val_losses)
-
-        # wandb.log({"train loss": mean_train_loss})
-        # wandb.log({"val loss": mean_val_loss})
-
-        # #df.loc[epoch_num] = [epoch_num, mean_train_loss, mean_val_loss]
-
-        # self.e_losses.append(mean_train_loss)
-        # self.e_val_losses.append(mean_val_loss)
-
+        # Early stopping
         if mean_val_loss < self.best_val_loss:
             self.best_val_loss = mean_val_loss
             torch.save(self.model.state_dict(), self.save_best_model_path) 
             print('best model saved')
 
+        # Checkpoint every ten epochs
         if epoch_num % 10 == 0:
             ep_model_path =  os.path.join(self.log_dir, '{}_Epoch{}_model.pt'.format(self.exp_name, epoch_num))
             torch.save(self.model.state_dict(), ep_model_path)
 
 
-        # report progress
-        # pbar.set_description(f"epoch {epoch_num+1} iter {it}: train loss {mean_train_loss:.5f}, val loss {mean_val_loss:.5f}.. lr {lr:e}")
-        # print(f"epoch {epoch_num+1} iter {it}: train loss {mean_train_loss:.5f}, val loss {mean_val_loss:.5f}. lr {lr:e}")	            # report progress	
         pbar.set_description(f"epoch {epoch_num+1} iter {it}: train loss {mean_train_loss:.5f}, val loss {mean_val_loss:.5f}.. lr {lr:e}")	
         print(f"epoch {epoch_num+1} iter {it}: train loss {mean_train_loss:.5f}, val loss {mean_val_loss:.5f}, train accuracy {mean_train_accuracy:.5f}, val accuracy {mean_val_accuracy:.5f}. lr {lr:e}")
 
     def train(self, args):
-
-        # tboad_path = args.logdir + '/runs'
-        # os.makedirs(tboad_path, exist_ok = True)
-        # writer = SummaryWriter(tboad_path)
         
         self.args = args
-        
-        os.environ["WANDB_API_KEY"] = "7a9cbed74d12db3de9cef466bb7b7cf08bdf1ea4"
-        os.environ["WANDB_MODE"] = "offline"
-
-        wandb_config = {
-            "machine": "Compute Canada",
-            "model": "MeDT",
-            "learning_rate": args.learningrate,
-            "batch_size": args.batchsize,
-        }
-        wandb.init(project='MeDT')
         
         lst = ['epoch', 'train_loss', 'val_loss', 'mean_train_accuracy', 'mean_val_accuracy']
         self.df = pd.DataFrame(columns = lst)
@@ -247,46 +209,28 @@ class Trainer:
         
         if not os.path.isdir(self.log_dir):
             os.makedirs(self.log_dir)
-
+            
+        # save directories
         self.save_best_model_path =  os.path.join(self.log_dir, '{}_best_model.pt'.format(self.exp_name))
         self.loss_plot_path = os.path.join(self.log_dir, '{}_loss_plot.png'.format(self.exp_name))
+        self.csv_saveloc = os.path.join(self.log_dir, 'out.csv')
         
         model, config = self.model, self.config
-        wandb.watch(model, log_freq=1)
         raw_model = model.module if hasattr(self.model, "module") else model
         self.optimizer = raw_model.configure_optimizers(config)
     
         self.tokens = 0 # counter used for learning rate decay
         
+        # for performance tracking
         self.e_losses = []
         self.e_val_losses = []
         self.e_accuracies = []
         self.e_val_accuracies = []
-
         self.best_val_loss = float('inf')
+        
+        # train for specified epochs
         for epoch in range(args.epochs):
             self.run_epoch('train', self.best_val_loss, epoch_num=epoch)
         
-        csv_saveloc = os.path.join(self.log_dir, 'out.csv')
-        #csv__test_saveloc = os.path.join(log_dir, 'test.csv')
-
         self.df.to_csv(csv_saveloc)
-        #df_test.to_csv('{}.csv'.format(csv__test_saveloc))
-        
-        # plt.figure()
-        # # plotting the points 
-        # plt.plot(e_losses, label='train_loss')
-        # plt.plot(e_val_losses, label='val_loss')
 
-        # # naming the x axis
-        # plt.xlabel('num updates')
-        # # naming the y axis
-        # plt.ylabel('action loss')
-  
-        # # giving a title to my graph
-        # plt.title('State-transformer train curve')
-
-        # plt.legend(loc="upper right")
-
-        # # function to show the plot
-        # plt.savefig(loss_plot_path)

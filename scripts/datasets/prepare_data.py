@@ -20,11 +20,12 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 
 
+################################################################################################################
+# Prepare patient trajectories 
+#
+#
+################################################################################################################
 class Prepare_mimic():
-    '''
-    docstring
-    '''
-
     def __init__(self, train_data_file, validation_data_file, test_data_file, minibatch_size,
                  context_dim=0,  state_dim=40, num_actions=25):
         '''
@@ -58,9 +59,7 @@ class Prepare_mimic():
         self.test_loader = DataLoader(self.test_dataset, batch_size=self.minibatch_size, shuffle=False)
 
     def create_dataset(self):
-        '''
-        docstring
-        '''
+
         train_trajectories = []
         test_trajectories = []
         eval_trajectories = []
@@ -107,4 +106,3 @@ class Prepare_mimic():
                         test_trajectories.append(trajectories)
 
             return train_trajectories, eval_trajectories, test_trajectories
-

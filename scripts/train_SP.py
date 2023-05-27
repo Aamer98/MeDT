@@ -8,6 +8,7 @@ from models.GPT import GPTConfig, GPT
 from models.state_predictor import State_Predictor
 from trainer.trainer_SP import TrainerConfig, Trainer
 
+
 ################################################################################################################
 # Constants
 #
@@ -21,7 +22,15 @@ BLOCK_SIZE = CONTEXT_LENGTH*2
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def main():
+################################################################################################################
+# train
+#
+# This is where learning happens. More specifically, the state predictor network is trained to estimate states  
+# with teacher forcing using MSE loss.
+#
+#
+################################################################################################################
+def train(args):
 
     # Experiment name
     exp_name = f'SP_ID{args.id}_nLayer{args.n_layer}_nHead{args.n_head}_nEmb{args.n_embd}_LR{args.learningrate}_BS{args.batchsize}_SEED{args.seed}'
@@ -29,8 +38,6 @@ def main():
     # Load dataset
     train_dataset = mimic_dataset.MimicTrajectoryDataset(os.path.join(args.datadir, 'train_Phys45.pickle'), CONTEXT_LENGTH, RTG_SCALE)
     eval_dataset = mimic_dataset.MimicTrajectoryDataset(os.path.join(args.datadir, 'val_Phys45.pickle'), CONTEXT_LENGTH, RTG_SCALE)
-    test_dataset = mimic_dataset.MimicTrajectoryDataset(os.path.join(args.datadir, 'test_Phys45.pickle'), CONTEXT_LENGTH, RTG_SCALE)
-
     
     # Build model
     mconf = GPTConfig(VOCAB_SIZE, BLOCK_SIZE, 
@@ -46,6 +53,7 @@ def main():
 
 
 if __name__ == "__main__":
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("--datadir", default="/home/aamer98/scratch/Datasets/mimic_sepsis", type=str)
     parser.add_argument("--epochs", "-e", type=int, default=2000)
@@ -61,5 +69,6 @@ if __name__ == "__main__":
     parser.add_argument("--n_layer", type=int, default=6)
     parser.add_argument("--n_head", type=int, default=8)
     parser.add_argument("--n_embd", type=int, default=128)
-    args = parser.parse_args()    
-    main()
+    args = parser.parse_args()
+
+    train(args)
