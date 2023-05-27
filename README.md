@@ -49,7 +49,10 @@ The `scripts` folder contains the files to reproduce the results in the paper.
 
 ## Data
 
+<p align="justify">
 The data used to run experiments is extracted from the [MIMIC-III dataset](https://physionet.org/content/mimiciii/1.4/), based on the septic patient cohort defined by Komorowski et al (2018). We utilize the data extracted and preprocessed codes as defined in the repository by [Killian et al.](https://github.com/MLforHealth/rl_representations). Follow the steps in that repository to generate the files 'train_set_tuples', 'val_set_tuples' and 'test_set_tuples' and place these files into the `data` folder. 
+</p>
+
 
 ### Data preparation
 
