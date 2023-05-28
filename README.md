@@ -86,14 +86,14 @@ python ./scripts/evaluate_policy.py
 <img src="assets/meDT_eval.png" width="600" />
 </p>
 
-<h4 align="justify"><i>Figure 1. </i>MeDT training: At each time-step t, the MeDT policy attends to past treatment trajectory. This includes the desired treatment outcome r (at inference time fixed to +1 for survival), desired next-step acuities k<sub>1</sub>,..., k<sub>t</sub>, patient states s<sub>1</sub>,...,s<sub>t</sub>, administered drug doses a<sub>1</sub>,...,a<sub>t-1</sub>, and outputs a prediction a&#770<sub>t</sub> of dose a<sub>t</sub>.</h4>
+<h4 align="justify"><i>Figure 3. </i>Autoregressive evaluation pipeline: At each time-step t, the pretrained state predictor attends to past recommended doses and predicted patient states, and outputs state prediction s&#770<sub>t+1</sub>. Both dosage recommendations a&#770<sub>t+1</sub> and predicted states are fed back to MeDT to simulate treatment trajectories.</h4>
 
 <br>
 <p align="center">
 <img src="assets/algorithm.png" width="600" />
 </p>
 
-<h4 align="center"><i>Caption1.</i></h4>
+<h4 align="center"><i>MeDT evaluation psuedocode.</i></h4>
 
 ## Acknowledgements
 
