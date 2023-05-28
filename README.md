@@ -13,7 +13,7 @@ chosen medical interventions, using a causal transformer model, allowing improve
 
 <br>
 <p align="center">
-<img src="assets/meDT_train.png" width="800" />
+<img src="assets/meDT_train.png" width="600" />
 </p>
 
 <h4 align="center"><i>Caption1.</i></h4>
