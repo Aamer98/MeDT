@@ -55,12 +55,12 @@ def train(args):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--datadir", default="/home/aamer98/scratch/Datasets/mimic_sepsis", type=str)
+    parser.add_argument("--datadir", default="./", type=str)
     parser.add_argument("--epochs", "-e", type=int, default=2000)
     parser.add_argument("--batchsize", "-b", type=int, default=128)
     parser.add_argument("--learningrate", "-lr", type=float, default=6e-4)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--logdir", type=str, default="/home/aamer98/scratch/medDT/logs")
+    parser.add_argument("--logdir", type=str, default="./medDT/logs")
     parser.add_argument("--id", type=str, default="0")
     parser.add_argument("--loadfile", "-l", action="store_true")
     parser.add_argument("--save", "-s", action="store_true")

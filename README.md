@@ -23,8 +23,7 @@ chosen medical interventions, using a causal transformer model, allowing improve
 <img src="assets/clinVmedt.png" width="800" />
 </p>
 
-<h4 align="center"><i>Caption2.</i></h4>
-
+<h4 align="justify"><i>Figure 2. </i>(a) Dosage suggested by MeDT and clinician policy for different SAPS2 scores. (b) Distribution of IV fluids and VPs given by the MeDT and clinician policies.
 </center>
 
 

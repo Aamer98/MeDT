@@ -175,29 +175,12 @@ def main(args):
     print('Haematologic: {:.2f}+-{:.2f}'.format(clc_mean(scores, 6), calc_std(scores, 6)))
     print('Other: {:.2f}+-{:.2f}'.format(clc_mean(scores, 7), calc_std(scores, 7)))
 
-#     print('mean SAPS2 = {:.2f}+-{:.2f}'.format(np.mean(np.array(scores)[:,:,0]), 
-#                 np.std(np.array(scores)[:,:,0]) / np.sqrt(np.size(np.array(scores)[:,:,0]))))
-#     print('Cardivascular: {:.2f}+-{:.2f}'.format(np.mean(np.array(scores)[:,:,1]), 
-#                 np.std(np.array(scores)[:,:,1]) / np.sqrt(np.size(np.array(scores)[:,:,1]))))
-#     print('Respiratory: {:.2f}+-{:.2f}'.format(np.mean(np.array(scores)[:,:,2]),  
-#                 np.std(np.array(scores)[:,:,2]) / np.sqrt(np.size(np.array(scores)[:,:,2]))))
-#     print('Neurological:{:.2f}+-{:.2f}'.format(np.mean(np.array(scores)[:,:,3]), 
-#                 np.std(np.array(scores)[:,:,3]) / np.sqrt(np.size(np.array(scores)[:,:,3]))))
-#     print('Renal: {:.2f}+-{:.2f}'.format(np.mean(np.array(scores)[:,:,4]), 
-#                 np.std(np.array(scores)[:,:,4]) / np.sqrt(np.size(np.array(scores)[:,:,4]))))
-#     print('Hepatic: {:.2f}+-{:.2f}'.format(np.mean(np.array(scores)[:,:,5]), 
-#                 np.std(np.array(scores)[:,:,5]) / np.sqrt(np.size(np.array(scores)[:,:,5]))))
-#     print('Haematologic: {:.2f}+-{:.2f}'.format(np.mean(np.array(scores)[:,:,6]), 
-#                 np.std(np.array(scores)[:,:,6]) / np.sqrt(np.size(np.array(scores)[:,:,6]))))
-#     print('Other: {:.2f}+-{:.2f}'.format(np.mean(np.array(scores)[:,:,7]), 
-#                 np.std(np.array(scores)[:,:,7]) / np.sqrt(np.size(np.array(scores)[:,:,7]))))
-    
 
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--datadir", default="/home/aamer98/scratch/Datasets/mimic_sepsis", type=str)
-    parser.add_argument('--log_dir', default='/home/aamer98/scratch/medDT/logs')
+    parser.add_argument("--datadir", default=".", type=str)
+    parser.add_argument('--log_dir', default='./medDT/logs')
     parser.add_argument("--sp_dir", "-sp", 
                         default="SP_ID0_nLayer4_nHead8_nEmb64_LR0.0006_BS128_SEED0", help="")
     parser.add_argument("--policy_dir", "-p", 
