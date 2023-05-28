@@ -21,7 +21,7 @@ chosen medical interventions, using a causal transformer model, allowing improve
 
 <br>
 <p align="center">
-<img src="assets/clinVmedt.png" width="500" />
+<img src="assets/clinVmedt.png" width="800" />
 </p>
 
 <h4 align="center"><i>Caption2.</i></h4>
