@@ -92,7 +92,7 @@ python ./scripts/evaluate_policy.py
 
 <br>
 <p align="center">
-<img src="assets/algorithm.png" width="500" />
+<img src="assets/algorithm.png" width="800" />
 </p>
 
 <h4 align="center"><i>Caption1.</i></h4>
