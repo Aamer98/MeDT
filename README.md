@@ -13,7 +13,7 @@ chosen medical interventions, using a causal transformer model, allowing improve
 
 <br>
 <p align="center">
-<img src="assets/vassopressor__.png" width="500" />
+<img src="assets/meDT_train.png" width="500" />
 </p>
 
 <h4 align="center"><i>Caption1.</i></h4>
@@ -21,7 +21,7 @@ chosen medical interventions, using a causal transformer model, allowing improve
 
 <br>
 <p align="center">
-<img src="assets/clinician_action_dict__.png" width="500" />
+<img src="assets/clinVmedt.png" width="500" />
 </p>
 
 <h4 align="center"><i>Caption2.</i></h4>
@@ -65,6 +65,7 @@ Following data preparation, you can start training and reproduce the results of 
 ### 1. Train models
 
 #### Train policy network
+Select model_type as MeDT, DT or BC to train desired model.
 ```
 python ./scripts/train_MeDT.py --model_type MeDT
 ```
@@ -79,6 +80,22 @@ python ./scripts/train_SP.py
 ```
 python ./scripts/evaluate_policy.py
 ```
+
+## Updated Content
+
+<br>
+<p align="center">
+<img src="assets/meDT_eval.png" width="500" />
+</p>
+
+<h4 align="center"><i>Caption1.</i></h4>
+
+<br>
+<p align="center">
+<img src="assets/algorithm.png" width="500" />
+</p>
+
+<h4 align="center"><i>Caption1.</i></h4>
 
 ## Acknowledgements
 
