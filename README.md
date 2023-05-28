@@ -88,7 +88,7 @@ python ./scripts/evaluate_policy.py
 <img src="assets/meDT_eval.png" width="600" />
 </p>
 
-<h4 align="justify"><i>MeDT training: At each time-step t, the MeDT policy attends to past treatment trajectory. This includes the desired treatment outcome r (at inference time fixed to +1 for survival), desired next-step acuities k<sub>1</sub>,..., k<sub>t</sub>, patient states s<sub>1</sub>,...,s<sub>t</sub>, administered drug doses a<sub>1</sub>,...,a<sub>t-1</sub>, and outputs a prediction <hat>a</hat><sub>t</sub> of dose a<sub>t</sub>.</i></h4>
+<h4 align="justify"><i>MeDT training: At each time-step t, the MeDT policy attends to past treatment trajectory. This includes the desired treatment outcome r (at inference time fixed to +1 for survival), desired next-step acuities k<sub>1</sub>,..., k<sub>t</sub>, patient states s<sub>1</sub>,...,s<sub>t</sub>, administered drug doses a<sub>1</sub>,...,a<sub>t-1</sub>, and outputs a prediction x&#772<sub>t</sub> of dose a<sub>t</sub>.</i></h4>
 
 <br>
 <p align="center">
