@@ -52,7 +52,7 @@ The `scripts` folder contains the files to reproduce the results in the paper.
 ### Data preparation
 
 ```
-python ./scripts/prepare_data.py
+python =scripts/prepare_data.py
 ```
 
 ## Run experiments
