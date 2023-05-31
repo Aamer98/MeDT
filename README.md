@@ -46,7 +46,7 @@ The `scripts` folder contains the files to reproduce the results in the paper.
 
 ## Data
 
-The data used to run experiments is extracted from the [MIMIC-III dataset](https://physionet.org/content/mimiciii/1.4/), based on the septic patient cohort defined by Komorowski et al (2018). We utilize the data extracted and preprocessed codes as defined in the repository by [Killian et al.](https://github.com/MLforHealth/rl_representations). Follow the steps in that repository to generate the files 'train_set_tuples', 'val_set_tuples' and 'test_set_tuples' and place these files into the `data` folder.
+The data used to run experiments is extracted from the [MIMIC-III dataset](https://physionet.org/content/mimiciii/1.4/), based on the septic patient cohort defined by Komorowski et al (2018). We utilize the data extracted and preprocessed codes as defined in the repository by [Killian et al.](https://github.com/MLforHealth/rl_representations). Follow the steps in that repository to generate the files 'train_set_tuples', 'val_set_tuples' and 'test_set_tuples' and place these files into the `data` folder. The train, validation and test splits are the same as that used by [Killian et al.](https://github.com/MLforHealth/rl_representations).
 
 
 ### Data preparation
@@ -61,7 +61,7 @@ Following data preparation, you can start training and reproduce the results of 
 
 
 ### 1. Train models
-
+First, the policy network is trained for treatment dosage prediction. Then, we train an additional state-predictor to evaluate the learnt policies.
 #### Train policy network
 Select model_type as MeDT, DT or BC to train desired model.
 ```
@@ -79,21 +79,6 @@ python ./scripts/train_SP.py
 python ./scripts/evaluate_policy.py
 ```
 
-## Updated Content
-
-<br>
-<p align="center">
-<img src="assets/meDT_eval.png" width="600" />
-</p>
-
-<h4 align="justify"><i>Figure 3. </i>Autoregressive evaluation pipeline: At each time-step t, the pretrained state predictor attends to past recommended doses and predicted patient states, and outputs state prediction s&#770<sub>t+1</sub>. Both dosage recommendations a&#770<sub>t+1</sub> and predicted states are fed back to MeDT to simulate treatment trajectories.</h4>
-
-<br>
-<p align="center">
-<img src="assets/algorithm.png" width="600" />
-</p>
-
-<h4 align="center"><i>MeDT evaluation psuedocode.</i></h4>
 
 ## Acknowledgements
 
