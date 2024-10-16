@@ -1,17 +1,3 @@
-'''
-This script configures and executes experiments for evaluating recurrent autoencoding approaches useful for learning
-informative representations of sequentially observed patient health.
-After configuring the specific settings and hyperparameters for the selected autoencoder, the experiment can be specified to:
-(1) Train the selected encoding and decoding functions used to establish the learned state representations 
-(2) Evaluate the trained model and encode+save the patient trajectories by their learned representations
-(3) Learn a treatment policy using the saved patient representations via offline RL. The algorithm used to learn a policy
-    is the discretized form of Batch Constrained Q-learning [Fujimoto, et al (2019)]
-The patient cohort used and evaluated in the study this code was built for is defined at: https://github.com/microsoft/mimic_sepsis
-============================================================================================================================
-This code is provided under the MIT License and is meant to be helpful, but WITHOUT ANY WARRANTY;
-November 2020 by Taylor Killian and Haoran Zhang; University of Toronto + Vector Institute
-============================================================================================================================
-'''
 
 import os
 import pickle
